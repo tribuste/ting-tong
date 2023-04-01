@@ -1,6 +1,7 @@
 use std::io::{stdin, stdout, Write};
 
 use methods::{TING_TONG_ID, TING_TONG_ELF};
+use rand::Rng;
 use risc0_zkvm::{Prover, Receipt};
 use risc0_zkvm::serde::to_vec;
 
@@ -11,14 +12,21 @@ struct HonestServer {
 }
 
 impl HonestServer {
-    // pub fn new_guess() -> Self {
-
-    // }
+    pub fn new_guess() -> Self {
+        let choice = rand::thread_rng().gen_range(0..3);
+        let guess = rand::thread_rng().gen_range(0..5);
+        HonestServer {
+            secret: Guess {
+                secret_choice: choice,
+                secret_guess: guess
+            },
+        }
+    }
 
     pub fn get_secret(&self) -> Vec<u32> {
         let dummy_guess = Guess {
-            secret_choice: 0,
-            secret_guess: 0,
+            secret_choice: 5,
+            secret_guess: 5,
         };
 
         let receipt = self.eval_round(dummy_guess);
@@ -118,13 +126,34 @@ fn read_stdin_guess() -> Guess {
     guess
 }
 
+fn game_is_won(score: Vec<u32>) -> bool {
+    if score[0] == 0 {
+        println!("You lost!!");
+        true 
+    } else if score[1] == 0 {
+        println!("You won!!");
+        true
+    } else {
+        false
+    }
+}
+
 fn main() {
     println!("Let's play TING TONG!!");
 
     let mut game_won = false;
 
     while game_won == false {
-        let guess_word = read_stdin_guess();
+        let server_guess = HonestServer::new_guess();
+        let player = Player {
+            hash: server_guess.get_secret()
+        };
+
+        let player_guess = read_stdin_guess();
+        let receipt = server_guess.eval_round(player_guess);
+        let score = player.check_receipt(receipt);
+
+        game_won = game_is_won(score);
     }
 
 }

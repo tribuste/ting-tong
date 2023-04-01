@@ -1,4 +1,4 @@
-use risc0_zkvm::sha::Digest;
+use risc0_zkp::core::sha::Digest;
 use serde::{Deserialize, Serialize};
 
 pub const SECRET_GUESS_COUNT: usize = 4;
@@ -11,6 +11,6 @@ pub struct Guess {
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct GameState {
     pub server_hash: Digest,
-    pub server_count: u64,
-    pub player_count: u64,
+    pub server_count: u32,
+    pub player_count: u32,
 }
