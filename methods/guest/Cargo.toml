@@ -9,4 +9,6 @@ edition = "2021"
 risc0-build = "0.12"
 
 [dependencies]
-risc0-zkvm = { version = "0.12", default-features = false }
+risc0-zkvm = { version = "0.14", default-features = false }
+ting-tong-core = {path = "../ting-tong-core", version = "1.0.0" }
+rand = "0.8"
