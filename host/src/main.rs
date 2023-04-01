@@ -1,21 +1,38 @@
-use methods::{TING_TONG_ID, TING_TONG_PATH};
-use risc0_zkvm::{Prover, Receipt};
-// use risc0_zkvm::serde::{from_slice, to_vec};
+use std::io::{stdin, stdout, Write};
 
-struct HonestServer{
-    secret_guess: u64,
-    secret_choice: u64,
+use methods::{TING_TONG_ID, TING_TONG_ELF};
+use risc0_zkvm::{Prover, Receipt};
+use risc0_zkvm::serde::to_vec;
+
+use ting_tong_core::Guess;
+
+struct HonestServer {
+    secret: Guess 
 }
 
 impl HonestServer {
+    // pub fn new_guess() -> Self {
+
+    // }
+
     pub fn get_secret(&self) -> Vec<u32> {
-        // TODO: runs the prover and return the hash of secret values
-        unimplemented!()
+        let dummy_guess = Guess {
+            secret_choice: 0,
+            secret_guess: 0,
+        };
+
+        let receipt = self.eval_round(dummy_guess);
+        let journal = receipt.journal;
+        journal[..16].to_owned()
     }
 
-    pub fn eval_round(&self, ) -> Receipt {
-        // TODO: call the prover, i.e. run the guest code
-        unimplemented!()
+    pub fn eval_round(&self, player_guess: Guess) -> Receipt {
+        let mut prover = Prover::new(TING_TONG_ELF, TING_TONG_ID).expect("failed to construct prover");
+
+        prover.add_input_u32_slice(to_vec(&self.secret).unwrap().as_slice());
+        prover.add_input_u32_slice(to_vec(&player_guess).unwrap().as_slice());
+
+        return prover.run().unwrap();
     }
 }
 
@@ -25,30 +42,89 @@ struct Player {
 
 impl Player {
     pub fn check_receipt(&self, receipt: Receipt) -> Vec<u32> {
-        // TODO: call the verify method and compare the stored hash and the hash
-        // in the receipt
-        unimplemented!()
+        receipt
+            .verify(TING_TONG_ID)
+            .expect("receipt verification failed");
+
+        let journal = receipt.journal;
+        let hash = &journal[..16];
+
+        if hash != self.hash {
+            panic!("The server cheated!!!");
+        }
+
+        let result = &journal[16..];
+        return result.to_owned();
     }
 }
 
+fn read_stdin_guess() -> Guess {
+    let mut line = String::new();
+    let mut guess = Guess {
+        secret_choice: 0,
+        secret_guess: 0,
+    };
+
+    loop {
+        print!("Thumbs up!:");
+        let _=stdout().flush();
+        stdin().read_line(&mut line).unwrap();
+        line.pop(); // remove trailing newline
+
+        match line.parse::<u64>() {
+            Ok(res) => {
+                if res < 3 {
+                    guess.secret_choice = res;
+                    break;
+                } else {
+                    println!("WTF!? You have only 2 thumbs!!\n");
+                    line.clear();
+                    continue;
+                }
+            }
+            Err(_) => {
+                println!("Must by a number!!\n");
+                line.clear();
+                continue;
+            }
+        }
+    };
+    line.clear();
+    loop {
+        print!("What is your guess? How many thumbs will be up!?:");
+        let _=stdout().flush();
+        stdin().read_line(&mut line).unwrap();
+        line.pop(); // remove trailing newline
+
+        match line.parse::<u64>() {
+            Ok(res) => {
+                if res < 5 {
+                    guess.secret_guess = res;
+                    break;
+                } else {
+                    println!("2 players have only 4 thumbs in total!!\n");
+                    line.clear();
+                    continue;
+                }
+            }
+            Err(_) => {
+                println!("Must by a number!!\n");
+                line.clear();
+                continue;
+            }
+        }
+    };
+
+    guess
+}
+
 fn main() {
-    // Make the prover.
-    let method_code = std::fs::read(TING_TONG_PATH)
-        .expect("Method code should be present at the specified path; did you use the correct *_PATH constant?");
-    let mut prover = Prover::new(&method_code, TING_TONG_ID).expect(
-        "Prover should be constructed from valid method source code and corresponding method ID",
-    );
+    println!("Let's play TING TONG!!");
 
-    // TODO: Implement communication with the guest here
+    let mut game_won = false;
 
-    // Run prover & generate receipt
-    let receipt = prover.run()
-        .expect("Code should be provable unless it 1) had an error or 2) overflowed the cycle limit. See `embed_methods_with_options` for information on adjusting maximum cycle count.");
+    while game_won == false {
+        let guess_word = read_stdin_guess();
+    }
 
-    // Optional: Verify receipt to confirm that recipients will also be able to verify your receipt
-    receipt.verify(TING_TONG_ID).expect(
-        "Code you have proven should successfully verify; did you specify the correct method ID?",
-    );
-
-    // TODO: Implement code for transmitting or serializing the receipt for other parties to verify here
 }

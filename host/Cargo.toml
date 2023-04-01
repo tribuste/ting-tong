@@ -7,3 +7,4 @@ edition = "2021"
 methods = { path = "../methods" }
 risc0-zkvm = "0.12"
 serde = "1.0"
+ting-tong-core = { path = "../core" }
