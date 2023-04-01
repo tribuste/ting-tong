@@ -1,0 +1,8 @@
+[package]
+name = "ting-tong-core"
+version = "1.0.0"
+edition = "2023"
+
+[dependencies]
+# risc0-zkvm = { path = "../../../risc0/zkvm", default-features = false }
+serde = "1.0"
