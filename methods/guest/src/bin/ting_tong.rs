@@ -1,9 +1,9 @@
 #![no_main]
 #![no_std] // std support is experimental, but you can remove this to try it
 
-use risc0_zkvm::guest::{env, sha};
-use risc0_zkvm::serde::to_vec;
-use ting_tong_core::{Guess, GameState};
+use risc0_zkvm::guest::env;
+use risc0_zkvm::sha::{Impl, Sha256};
+use ting_tong_core::{GameState, Guess};
 
 risc0_zkvm::guest::entry!(main);
 
@@ -39,9 +39,10 @@ pub fn main() {
     let player_guess: Guess = env::read();
 
     if player_guess.secret_guess == 5 && player_guess.secret_choice == 5 {
-        let server_hash = sha::digest(&to_vec(&server_guess).unwrap());
+        let server_hash = *Impl::hash_bytes(&bincode::serialize(&server_guess).unwrap());
+        // let server_hash = *Impl::hash_bytes(&to_vec(&server_guess).unwrap());
         let game_state = GameState {
-            server_hash: *server_hash,
+            server_hash: server_hash,
             server_count,
             player_count,
         };
@@ -77,9 +78,10 @@ pub fn main() {
             player_count -= 1;
         }
 
-        let server_hash = sha::digest(&to_vec(&server_guess).unwrap());
+        let server_hash = *Impl::hash_bytes(&bincode::serialize(&server_guess).unwrap());
+        // let server_hash = *Impl::hash_bytes(&to_vec(&server_guess).unwrap());
         let game_state = GameState {
-            server_hash: *server_hash,
+            server_hash: server_hash,
             server_count,
             player_count,
         };

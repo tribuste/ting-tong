@@ -1,4 +1,4 @@
-use risc0_zkp::core::sha::Digest;
+use risc0_zkvm::sha::Digest;
 use serde::{Deserialize, Serialize};
 
 pub const SECRET_GUESS_COUNT: usize = 4;

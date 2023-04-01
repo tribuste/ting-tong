@@ -6,8 +6,9 @@ edition = "2021"
 [workspace]
 
 [build-dependencies]
-risc0-build = "0.12.0"
+risc0-build = "0.14.0"
 
 [dependencies]
-risc0-zkvm = { version = "0.12", default-features = false, features = ["std"] }
+risc0-zkvm = { version = "0.14.0", default-features = false, features = ["std"] }
 ting-tong-core = { path = "../../core" }
+bincode = "1.0"
