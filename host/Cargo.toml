@@ -5,6 +5,6 @@ edition = "2021"
 
 [dependencies]
 methods = { path = "../methods" }
-risc0-zkvm = "0.12"
+risc0-zkvm = "0.14.0"
 serde = "1.0"
 ting-tong-core = { path = "../core" }
